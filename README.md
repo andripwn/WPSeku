@@ -20,6 +20,14 @@ $ python3 wpseku.py
 
 `python3 wpseku.py --url https://www.xxxxxxx.com --verbose`
 
+To include vulnerability data from the WPScan API v3, pass your API token:
+
+`python3 wpseku.py --url https://www.xxxxxxx.com --api-token YOUR_TOKEN`
+
+The short form `-at YOUR_TOKEN` works too.
+
+Without a token, WPSeku skips the WPScan vulnerability lookup and continues the local checks.
+
 * __Output__
 
 ```

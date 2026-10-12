@@ -1,8 +1,8 @@
 """Support for discovering Wordpress versions."""
-from json import loads
 from re import findall
 
 from lib.request import *
+from lib.wpscan_api import lookup
 
 
 class wpversion(Request):
@@ -62,25 +62,22 @@ class wpversion(Request):
 						except Exception:
 							pass
 	def dbwpscan(self,version):
-		url = "https://www.wpvulndb.com/api/v2/wordpresses/%s"%self.version(version)
 		version = version[0].decode('utf-8')
-		resp = self.send(url=url,method="GET")
-		json = loads(resp.content)
-		if resp.headers['Content-Type'] == 'application/json':
-			if json[version]:
-				if json[version]['release_date']:
-					more('Release date: %s'%(json[version]['release_date']))
-					if json[version]['vulnerabilities']:
-						for x in range(len(json[version]['vulnerabilities'])):
-							more('Title: %s'%(json[version]['vulnerabilities'][x]['title']))
-							if json[version]['vulnerabilities'][x]['references']['url']:
-								for y in range(len(json[version]['vulnerabilities'][x]['references']['url'])):
-									more('Reference: %s'%(json[version]['vulnerabilities'][x]['references']['url'][y]))
-							more('Fixed in: %s'%(json[version]['vulnerabilities'][x]['fixed_in']))
-					else: more('Not found vulnerabilities')
-				else: more('Not found vulnerabilities')
-			else: more('Not found vulnerabilities')
-		else: more('Not found vulnerabilities')
+		if not self.kwargs.get('api_token'):
+			return
+		entry = lookup('wordpresses', version.replace('.', ''), self.kwargs, version)
+		if entry is None:
+			return
+		if entry.get('release_date'):
+			more('Release date: %s' % entry['release_date'])
+		vulnerabilities = entry.get('vulnerabilities') or []
+		if not vulnerabilities:
+			more('Not found vulnerabilities')
+		for vulnerability in vulnerabilities:
+			more('Title: %s' % vulnerability.get('title', 'Unknown'))
+			for reference in (vulnerability.get('references') or {}).get('url') or []:
+				more('Reference: %s' % reference)
+			more('Fixed in: %s' % vulnerability.get('fixed_in', 'Unknown'))
 
 	def version(self,version):
 		vers = ""

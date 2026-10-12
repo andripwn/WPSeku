@@ -63,7 +63,11 @@ class Request(object):
 						    'http':self.kwarg['proxy'],
 						    'https':self.kwarg['proxy']
 						    })
-		except requests.exceptions.ConnectionError:
-			exit(warn('Failed to establish a new connection'))
+		except requests.exceptions.RequestException as error:
+			warn('Request failed for %s: %s' % (url, error))
+			req = requests.Response()
+			req.status_code = 0
+			req._content = b''
+			req.url = url
 		# return req attr
 		return req
