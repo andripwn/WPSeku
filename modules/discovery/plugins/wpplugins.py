@@ -4,6 +4,7 @@ from json import loads
 from re import I, findall, search
 
 from lib.request import *
+from lib.wpscan_api import lookup
 
 
 class wpplugins(Request):
@@ -100,31 +101,27 @@ class wpplugins(Request):
 	def s_plugins(self):
 		plugin = []
 		resp = self.send(url=self.url, method="GET")
-		plugins = findall(decode('/wp-content/plugins/(.+?)/'), resp.content)
+		plugins = findall(decode('/wp-content/plugins/([A-Za-z0-9][A-Za-z0-9_-]*)/'), resp.content)
 		for pl in plugins:
 			if pl not in plugin:
 				plugin.append(pl)
 		return plugin
 
 	def dbwpscan(self, plugin):
+		if not self.kwargs.get('api_token'):
+			return
 		if self.kwargs['verbose'] is True:
 			info('Checking plugin vulnerabilities...')
 		plugin = plugin.decode('utf-8')
-		url = "https://www.wpvulndb.com/api/v2/plugins/%s"%(plugin)
-		resp = self.send(url=url,method="GET")
-		print(resp.content)
-		if resp.headers['Content-Type'] == 'application/json':
-			json = loads(resp.content)
-			if json[plugin]:
-				if json[plugin]['vulnerabilities']:
-					for x in range(len(json[plugin]['vulnerabilities'])):
-						more('Title: \033[1;31m%s'%(json[plugin]['vulnerabilities'][x]['title']))
-						if json[plugin]['vulnerabilities'][x]['references'] != {}:
-							if json[plugin]['vulnerabilities'][x]['references']['url']:
-								for y in range(len(json[plugin]['vulnerabilities'][x]['references']['url'])):
-									more('Reference: %s'%(json[plugin]['vulnerabilities'][x]['references']['url'][y]))
-						more('Fixed in: %s'%(json[plugin]['vulnerabilities'][x]['fixed_in']))
-				else: more('Not found vulnerabilities')
-			else: more('Not found vulnerabilities')
-		else: more('Not found vulnerabilities')
+		entry = lookup('plugins', plugin, self.kwargs)
+		if entry is None:
+			return
+		vulnerabilities = entry.get('vulnerabilities') or []
+		if not vulnerabilities:
+			more('Not found vulnerabilities')
+		for vulnerability in vulnerabilities:
+			more('Title: %s' % vulnerability.get('title', 'Unknown'))
+			for reference in (vulnerability.get('references') or {}).get('url') or []:
+				more('Reference: %s' % reference)
+			more('Fixed in: %s' % vulnerability.get('fixed_in', 'Unknown'))
 		normal('')

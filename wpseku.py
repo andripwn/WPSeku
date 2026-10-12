@@ -15,7 +15,8 @@ class wpseku(object):
 	"""WPSeku main object"""
 	kwargs = {
 			 'agent':ragent(),'ragent':False,'redirect':True,
-			  'cookie':None,'proxy':None,'timeout':None,'verbose':False,'headers':{}
+				  'cookie':None,'proxy':None,'timeout':None,'verbose':False,'headers':{},
+				  'api_token':None
 			  }
 	def main(self):
 		# default value
@@ -28,10 +29,15 @@ class wpseku(object):
 		#
 		if len(sys.argv) < 2:
 			usage(True)
+		argv = [
+			'--api-token' if arg == '-at' else
+			'--api-token=' + arg[4:] if arg.startswith('-at=') else arg
+			for arg in sys.argv[1:]
+		]
 		try:
-			opts,args = getopt.getopt(sys.argv[1:],'u:U:s:p:c:a:t:w:Rrhvb:',['url=',
+			opts,args = getopt.getopt(argv,'u:U:s:p:c:a:t:w:Rrhvb:',['url=',
 				'brute','user=','scan=','proxy=','cookie=','agent=','wordlist=','timeout=',
-				'redirect','ragent','help','verbose'])
+					'redirect','ragent','help','verbose','api-token='])
 		except getopt.GetoptError as e:
 			usage(True)
 		for opt,arg in opts:
@@ -46,6 +52,7 @@ class wpseku(object):
 			if opt in ('-R','--redirect'):self.kwargs['redirect']=True
 			if opt in ('-r','--ragent'):self.kwargs['ragent']=True
 			if opt in ('-v','--verbose'):self.kwargs['verbose']=True
+			if opt == '--api-token':self.kwargs['api_token']=arg
 			if opt in ('-h','--help'):usage(True)
 		# start
 		try:

@@ -36,6 +36,7 @@ def usage(e=False):
 	print("\t-p --proxy\tUse a proxy, (host:port)")
 	print("\t-c --cookie\tSet HTTP Cookie header value")
 	print("\t-a --agent\tSet HTTP User-agent header value")
+	print("\t-at --api-token\tWPScan API v3 token for vulnerability data")
 	print("\t-r --ragent\tUse random User-agent header value")
 	print("\t-R --redirect\tSet redirect target URL False")
 	print("\t-t --timeout\tSeconds to wait before timeout connection")

@@ -47,7 +47,7 @@ class wpusers(Request):
 		url = Path(self.url, '/wp-json/wp/v2/users')
 		resp = self.send(url=url, method="GET")
 		if resp.status_code == 200:
-			json = loads(resp.content, encoding="utf-8")
+			json = loads(resp.content)
 			for x in range(len(json)):
 				users.append((json[x]['name'], json[x]['slug']))
 		return users
@@ -58,7 +58,7 @@ class wpusers(Request):
 		resp = self.send(url=url, method="GET")
 		if resp.status_code == 200:
 			try:
-				json = loads(resp.content, encoding="utf-8")
+				json = loads(resp.content)
 				for x in range(len(json)):
 					users.append((json[x]['name'], json[x]['slug']))
 			except json.decoder.JSONDecodeError:
